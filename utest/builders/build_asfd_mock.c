@@ -65,12 +65,13 @@ if(wbuf->cmd==CMD_SIG)
                                 bytes_to_md5str(blk.md5sum));
 
 }
+*/
 if(wbuf->cmd==CMD_APPEND)
 {
 	for(int i=0; i<wbuf->len; i++)
 		printf("0x%x 0x%x\n", wbuf->buf[i], expected->buf[i]);
 }
-*/
+
 printf("w %s - '%s' '%s'\n", asfd->desc, iobuf_to_printable(wbuf),
 		iobuf_to_printable(expected));
 	fail_unless(wbuf->len==expected->len);
