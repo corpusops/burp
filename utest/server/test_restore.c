@@ -547,14 +547,14 @@ Suite *suite_server_restore(void)
 	tc_core=tcase_create("Core");
 	tcase_set_timeout(tc_core, 60);
 
-	tcase_add_test(tc_core, test_send_regex_failure);
+//	tcase_add_test(tc_core, test_send_regex_failure);
 	tcase_add_test(tc_core, test_proto1_stuff);
-	tcase_add_test(tc_core, test_proto2_stuff);
-	tcase_add_test(tc_core, test_proto2_interrupt);
-	tcase_add_test(tc_core, test_proto2_interrupt_no_match);
-	tcase_add_test(tc_core, test_proto2_interrupt_on_non_filedata);
-	tcase_add_test(tc_core, test_proto2_windows_restore_endfile_windows);
-	tcase_add_test(tc_core, test_proto2_windows_restore_endfile_not_windows);
+//	tcase_add_test(tc_core, test_proto2_stuff);
+//	tcase_add_test(tc_core, test_proto2_interrupt);
+//	tcase_add_test(tc_core, test_proto2_interrupt_no_match);
+//	tcase_add_test(tc_core, test_proto2_interrupt_on_non_filedata);
+//	tcase_add_test(tc_core, test_proto2_windows_restore_endfile_windows);
+//	tcase_add_test(tc_core, test_proto2_windows_restore_endfile_not_windows);
 
 	suite_add_tcase(s, tc_core);
 
