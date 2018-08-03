@@ -253,6 +253,7 @@ static void setup_asfds_proto1_stuff(struct asfd *asfd, struct slist *slist)
 
 START_TEST(test_proto1_stuff)
 {
+printf("ZLIB_VERSION: %s\n", ZLIB_VERSION);
 	run_test(0, PROTO_1, 10, 0, setup_asfds_proto1_stuff);
 }
 END_TEST
