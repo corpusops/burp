@@ -213,7 +213,7 @@ static void setup_asfds_proto1_stuff(struct asfd *asfd, struct slist *slist)
 				0x1f, 0x8b, 0x08, 0, 0,
 				0, 0, 0, 0x02, 0x03
 			};
-			if(ZLIB_VERNUM >= 0x12b0)
+			if(ZLIB_VERNUM >= 0x12b0) {
 				// 0x12b0 = 1.2.11, Travis mac builds use this.
 				gzipped_data1[9]=0x13;
 			}
