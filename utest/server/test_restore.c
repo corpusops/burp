@@ -213,6 +213,9 @@ static void setup_asfds_proto1_stuff(struct asfd *asfd, struct slist *slist)
 				0x1f, 0x8b, 0x08, 0, 0,
 				0, 0, 0, 0x02, 0x03
 			};
+			//if(ZLIB_VERNUM >= 0x1211) {
+			//	gzipped_data1[9]=0x13;
+			//}
 			unsigned char gzipped_data2[14] = {
 				0x4b, 0x49, 0x2c, 0x49, 0x04, 0x00, 0x63,
 				0xf3, 0xf3, 0xad, 0x04, 0x00, 0x00, 0x00
@@ -254,6 +257,7 @@ static void setup_asfds_proto1_stuff(struct asfd *asfd, struct slist *slist)
 START_TEST(test_proto1_stuff)
 {
 printf("ZLIB_VERSION: %s\n", ZLIB_VERSION);
+printf("ZLIB_VERNUM: 0x%x\n", ZLIB_VERNUM);
 	run_test(0, PROTO_1, 10, 0, setup_asfds_proto1_stuff);
 }
 END_TEST
