@@ -1,10 +1,4 @@
-burp (2.2.10-trusty-4ubuntu1) trusty; urgency=medium
-
-  * packaging for trusty
-
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 16:26:08 +0200
-
-burp (2.2.10-trusty-4build2) trusty; urgency=medium
+burp (2.0.54-4build2) cosmic; urgency=medium
 
   * No-change rebuild for ncurses soname changes.
 
