@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
-AM_CPPFLAGS = -fno-strict-aliasing
+AM_CPPFLAGS = -fno-strict-aliasing -I$(CURDIR)/uthash
 
 CLEANFILES =
 
