@@ -1,3 +1,28 @@
+burp (2.3.16-cosmic-4ubuntu23) cosmic; urgency=medium
+
+  * packaging for cosmic
+
+ -- kiorky <kiorky@cryptelium.net>  Sun, 24 Nov 2019 19:22:26 +0100
+
+burp (2.3.16-cosmic-4ubuntu22) cosmic; urgency=medium
+
+  * packaging for bionic
+
+ -- kiorky <kiorky@cryptelium.net>  Sun, 24 Nov 2019 19:22:22 +0100
+
+burp (2.3.16-bionic-4ubuntu21) bionic; urgency=medium
+
+  * packaging for xenial
+
+ -- kiorky <kiorky@cryptelium.net>  Sun, 24 Nov 2019 19:22:18 +0100
+
+burp (2.3.16-xenial-4ubuntu20) xenial; urgency=medium
+
+  * packaging
+  * packaging for trusty
+
+ -- kiorky <kiorky@cryptelium.net>  Sun, 24 Nov 2019 19:22:13 +0100
+
 burp (2.2.12-cosmic-4ubuntu18) cosmic; urgency=medium
 
   * packaging for cosmic

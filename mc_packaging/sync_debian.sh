@@ -8,10 +8,10 @@ export PPA="${PACKAGE}"
 export DEBEMAIL=${DEBEMAIL:-kiorky@cryptelium.net}
 export KEY="${KEY:-0x5616F8C2}"
 export VER=${VER:-"$(grep "#define NGINX_VERSION" src/core/nginx.h 2>/dev/null|awk '{print $3}'|sed 's/"//g')"}
-export VER="2.2.12"
+export VER="2.3.16"
 export FLAVORS="vivid trusty precise"
-export FLAVORS="trusty xenial bionic cosmic"
-export RELEASES="${RELEASES:-"experimental|stable|unstable|precise|trusty|utopic|vivid|oneric|wily|xenial|artful|bionic|cosmic"}"
+export FLAVORS="trusty xenial bionic disco"
+export RELEASES="${RELEASES:-"experimental|stable|unstable|precise|trusty|utopic|vivid|oneric|wily|xenial|artful|bionic|cosmic|disco"}"
 if [ -e "${W}/mc_packaging/debian/" ];then
     rsync -av "${W}/mc_packaging/debian/" "${W}/debian/"
 fi
@@ -24,7 +24,7 @@ cd "${W}"
 CHANGES=""
 if [ -e $HOME/.gnupg/.gpg-agent-info ];then . $HOME/.gnupg/.gpg-agent-info;fi
 # make a release for each flavor
-logfile=../log
+logfile=$W/../log
 if [ -e "${logfile}" ];then rm -f "${logfile}";fi
 if [ -e "${logfile}.pipe" ];then rm -f "${logfile}.pipe";fi
 mkfifo "${logfile}.pipe"
@@ -35,10 +35,9 @@ for i in $FLAVORS;do
     dch -i -D "${i}" "packaging for ${i}"
     debuild -k${KEY} -S -sa --lintian-opts -i
 done
-#egrep "signfile" ../log|sed "s///g"
 exec 1>&1 2>&2
 rm "${logfile}.pipe"
-CHANGES=$(egrep "signfile.* dsc " ../log|awk '{print $3}'|sed -re "s/\.dsc$/_source.changes/g" )
+CHANGES=$(egrep "signfile.* dsc " $logfile|awk '{print $3}'|sed -re "s/\.dsc$/_source.changes/g" )
 # upload to final PPA
 cd "${W}/.."
 for i in ${CHANGES};do
