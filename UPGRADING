@@ -1,5 +1,40 @@
 Things to watch out for when upgrading.
 
+2.3.12
+------
+On Windows, the '-x' option has been split into two different options - '-x'
+and '-X'.
+'-x': Restore without using the Windows VSS api, and attempt to strip out any
+      VSS data. This now works the same as the non-Windows client, and is a new
+      option for Windows.
+'-X': Restore without using the Windows VSS api, and do not attempt to strip
+      out any VSS data. This option only exists on Windows, and was the
+      behaviour that you previously got with '-x'. Use this if your backup
+      contains no VSS data.
+
+2.3.4
+-----
+Clients will now error out if using protocol 2 and 'encryption_password' is
+set, because that option is not supported in protocol 2.
+
+2.3.2
+-----
+The 'restore_client' option now takes into consideration the 'client_can_X'
+settings of the original client before considering the 'client_can_X' settings
+of the restore client. To get the previous behaviour, where only the restore
+client's settings were considered, use the new 'super_client' option instead
+of 'restore_client'.
+
+2.2.14
+------
+For security, the burp client will no longer let you restore over symlinks
+that point outside of your desired destination directory. Specifying a
+'-d <directory>' with your restore parameters is now mandatory. If you wish
+to restore everything back to the original locations, you can give '-d /',
+which will also work on Windows clients. If you wish server-initiated restores
+to restore to original locations, you should add '-d /' to the timed job
+in the client side.
+
 2.2.12
 ------
 The command line option to print the version number, is now '-V'.

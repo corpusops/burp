@@ -43,7 +43,14 @@ void lock_get_quick(struct lock *lock)
 	lock->status=GET_LOCK_GOT;
 	return;
 #else
-	if((lock->fd=open(lock->path, O_WRONLY|O_CREAT, 0666))<0)
+	if((lock->fd=open(
+		lock->path,
+#ifdef O_NOFOLLOW
+		O_NOFOLLOW|
+#endif
+		O_WRONLY|O_CREAT,
+		0666
+	))<0)
 	{
 		logp("Could not open lock file %s: %s\n",
 			lock->path, strerror(errno));
@@ -57,7 +64,7 @@ void lock_get_quick(struct lock *lock)
 			lock->path, strerror(errno));
 		goto error; // Some other error.
 	}
-	if(lock_write_pid_and_prog(lock))
+	if(lock_write_pid(lock))
 		goto error;
 	
 	lock->status=GET_LOCK_GOT;
@@ -71,7 +78,7 @@ notgot:
 #endif
 }
 
-int lock_write_pid_and_prog(struct lock *lock)
+int lock_write_pid(struct lock *lock)
 {
 	char text[64]="";
 	if(ftruncate(lock->fd, 0))
@@ -86,7 +93,7 @@ int lock_write_pid_and_prog(struct lock *lock)
 			lock->path, strerror(errno));
 		return -1;
 	}
-	snprintf(text, sizeof(text), "%d\n%s\n", (int)getpid(), progname());
+	snprintf(text, sizeof(text), "%d\n", (int)getpid());
 	if(write(lock->fd, text, strlen(text))!=(ssize_t)strlen(text))
 	{
 		logp("Could not write pid/progname to %s: %s\n",

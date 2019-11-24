@@ -14,24 +14,25 @@
 
 // Attempt to stop VSS nicely if the client is interrupted by the user.
 BOOL CtrlHandler(DWORD fdwCtrlType)
-{ 
+{
 	switch(fdwCtrlType)
-	{ 
-		// Handle the CTRL-C signal. 
+	{
+		// Handle the CTRL-C signal.
 		case CTRL_C_EVENT:
-		case CTRL_CLOSE_EVENT: 
-		case CTRL_BREAK_EVENT: 
+		case CTRL_CLOSE_EVENT:
+		case CTRL_BREAK_EVENT:
 			win32_stop_vss();
-			return FALSE; 
-		default: 
-			return FALSE; 
-	} 
+			return FALSE;
+		default:
+			return FALSE;
+	}
 }
 
 int win32_start_vss(struct asfd *asfd, struct conf **confs)
 {
 	int errors=0;
 	struct cntr *cntr=get_cntr(confs);
+	const char *drives_vss=get_string(confs[OPT_VSS_DRIVES]);
 
 	if(SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, TRUE))
 		logp("Control handler registered.\n");
@@ -42,16 +43,15 @@ int win32_start_vss(struct asfd *asfd, struct conf **confs)
 		return errors;
 	}
 
-	if(g_pVSSClient->InitializeForBackup())
+	if(g_pVSSClient->InitializeForBackup(asfd, cntr))
 	{
-		const char *vss_drives=get_string(confs[OPT_VSS_DRIVES]);
 		char szWinDriveLetters[27];
 		// Tell vss which drives to snapshot.
-		if(vss_drives)
+		if(drives_vss)
 		{
 			unsigned int i=0;
-			for(i=0; i<strlen(vss_drives) && i<26; i++)
-			  szWinDriveLetters[i]=toupper(vss_drives[i]);
+			for(i=0; i<strlen(drives_vss) && i<26; i++)
+			  szWinDriveLetters[i]=toupper(drives_vss[i]);
 			szWinDriveLetters[i]='\0';
 		}
 		else
@@ -86,7 +86,11 @@ int win32_start_vss(struct asfd *asfd, struct conf **confs)
 			szWinDriveLetters);
 		if(!g_pVSSClient->CreateSnapshots(szWinDriveLetters))
 		{
-			logw(asfd, cntr, "Generate VSS snapshots failed.\n");
+			berrno be;
+			berrno_init(&be);
+			logw(asfd, cntr,
+				"Generate VSS snapshots failed.ERR=%s\n",
+				berrno_bstrerror(&be, b_errno_win32));
 			errors++;
 		}
 		else
@@ -105,7 +109,11 @@ int win32_start_vss(struct asfd *asfd, struct conf **confs)
 			for(i=0; i<(int)g_pVSSClient->GetWriterCount(); i++)
 			{
 				if(g_pVSSClient->GetWriterState(i)<1)
+				{
+					logw(asfd, cntr,
+						"Start GetWriterState(%d)<1\n", i);
 					errors++;
+				}
 				logp("VSS Writer (PrepareForBackup): %s\n",
 					g_pVSSClient->GetWriterInfo(i));
 			}
@@ -133,7 +141,13 @@ int win32_stop_vss(void)
 		for(i=0; i<(int)g_pVSSClient->GetWriterCount(); i++)
 		{
 			if(g_pVSSClient->GetWriterState(i)<1)
+			{
+				// Would be better to be a logw, but this gets
+				// called by some weird handler thing above, so
+				// it is hard to pass in asfd and cntr.
+				logp("Stop GetWriterState(%d)<1\n", i);
 				errors++;
+			}
 			logp("VSS Writer (BackupComplete): %s\n",
 				g_pVSSClient->GetWriterInfo(i));
 		}
@@ -277,6 +291,7 @@ int get_vss(BFILE *bfd, char **vssdata, size_t *vlen)
 	snprintf(*vssdata, 9, "%c%08X", META_VSS, (unsigned int)*vlen);
 	memcpy((*vssdata)+9, tmp, *vlen);
 	(*vlen)+=9;
+	free_w(&tmp);
 	return 0;
 error:
 	free_w(&tmp);

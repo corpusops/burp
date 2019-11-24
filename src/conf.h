@@ -37,6 +37,13 @@ enum rshash
 	RSHASH_BLAKE2
 };
 
+enum vss_restore
+{
+	VSS_RESTORE_OFF=0,
+	VSS_RESTORE_OFF_STRIP,
+	VSS_RESTORE_ON
+};
+
 enum conf_type
 {
 	CT_STRING=0,
@@ -89,6 +96,7 @@ enum conf_opt
 	OPT_SSL_PEER_CN,
 	OPT_SSL_CIPHERS,
 	OPT_SSL_COMPRESSION,
+	OPT_SSL_VERIFY_PEER_EARLY,
 	OPT_USER,
 	OPT_GROUP,
 	OPT_RATELIMIT,
@@ -100,6 +108,7 @@ enum conf_opt
 	OPT_MESSAGE,
 	OPT_CNAME_LOWERCASE, // force lowercase cname, client or server option
 	OPT_CNAME_FQDN, // use fqdn cname, client or server option
+	OPT_VSS_RESTORE,
 
 	// Server options.
 	OPT_LISTEN,
@@ -129,6 +138,7 @@ enum conf_opt
 	OPT_MONITOR_LOGFILE, // An ncurses client option, from command line.
 	OPT_MONITOR_BROWSE_CACHE,
 	OPT_MONITOR_EXE,
+	OPT_BACKUP_FAILOVERS_LEFT,
 
 	// Client options.
 	OPT_CNAME, // set on the server when client connects
@@ -143,6 +153,8 @@ enum conf_opt
 	OPT_PASSWD, // also a clientconfdir option
 	OPT_ENABLED, // also a clientconfdir option
 	OPT_SERVER,
+	OPT_SERVER_FAILOVER,
+	OPT_FAILOVER_ON_BACKUP_ERROR,
 	OPT_ENCRYPTION_PASSWORD,
 	OPT_AUTOUPGRADE_OS,
 	OPT_AUTOUPGRADE_DIR, // also a server option
@@ -167,6 +179,8 @@ enum conf_opt
 	OPT_INCFS, // include filesystems
 	OPT_EXCOM, // exclude from compression
 	OPT_INCGLOB, // include (glob expression)
+	OPT_SEED_SRC,
+	OPT_SEED_DST,
 	OPT_CROSS_ALL_FILESYSTEMS,
 	OPT_READ_ALL_FIFOS,
 	OPT_FIFOS,
@@ -262,8 +276,10 @@ enum conf_opt
 
 	OPT_N_FAILURE_SCRIPT,
 	OPT_N_FAILURE_ARG,
-	// List of clients that are permitted to restore the files from our client.
+	OPT_N_FAILURE_BACKUP_FAILOVERS_LEFT,
+
 	OPT_RESTORE_CLIENTS,
+	OPT_SUPER_CLIENTS,
 
 	OPT_DEDUP_GROUP,
 
@@ -271,6 +287,7 @@ enum conf_opt
 	OPT_CLIENT_CAN_DIFF,
 	OPT_CLIENT_CAN_FORCE_BACKUP,
 	OPT_CLIENT_CAN_LIST,
+	OPT_CLIENT_CAN_MONITOR,
 	OPT_CLIENT_CAN_RESTORE,
 	OPT_CLIENT_CAN_VERIFY,
 	OPT_SERVER_CAN_RESTORE,
@@ -279,16 +296,18 @@ enum conf_opt
 	// counters on resume/verify/restore.
 	OPT_SEND_CLIENT_CNTR,
 
-	// Set on the server to the restore client name (the one that you
+	// Set on the server to the super client name (the one that you
 	// connected with) when the client has switched to a different set of
 	// client backups.
-	OPT_RESTORE_CLIENT,
+	OPT_SUPER_CLIENT,
 	// Path to the server initiated restore file.
 	OPT_RESTORE_PATH,
 
 	// Original client that backed up. Used when doing a server initiated
 	// restore to an alternative client,
 	OPT_ORIG_CLIENT,
+	// The client that connected.
+	OPT_CONNECT_CLIENT,
 
 	OPT_CNTR,
 

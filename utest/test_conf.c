@@ -51,6 +51,7 @@ static void check_default(struct conf **c, enum conf_opt o)
 		case OPT_R_SCRIPT:
 		case OPT_RESTORE_PATH:
 		case OPT_ORIG_CLIENT:
+		case OPT_CONNECT_CLIENT:
 		case OPT_CONFFILE:
 		case OPT_USER:
 		case OPT_GROUP:
@@ -67,8 +68,10 @@ static void check_default(struct conf **c, enum conf_opt o)
 		case OPT_DEDUP_GROUP:
 		case OPT_VSS_DRIVES:
 		case OPT_REGEX:
-		case OPT_RESTORE_CLIENT:
+		case OPT_SUPER_CLIENT:
 		case OPT_MONITOR_EXE:
+		case OPT_SEED_SRC:
+		case OPT_SEED_DST:
 			fail_unless(get_string(c[o])==NULL);
 			break;
 		case OPT_RATELIMIT:
@@ -109,7 +112,13 @@ static void check_default(struct conf **c, enum conf_opt o)
 		case OPT_PORT_DELETE:
 		case OPT_MAX_RESUME_ATTEMPTS:
 		case OPT_FAIL_ON_WARNING:
+		case OPT_SSL_VERIFY_PEER_EARLY:
+		case OPT_FAILOVER_ON_BACKUP_ERROR:
+		case OPT_BACKUP_FAILOVERS_LEFT:
 			fail_unless(get_int(c[o])==0);
+			break;
+		case OPT_VSS_RESTORE:
+			fail_unless(get_int(c[o])==VSS_RESTORE_ON);
 			break;
 		case OPT_DAEMON:
 		case OPT_STDOUT:
@@ -125,6 +134,7 @@ static void check_default(struct conf **c, enum conf_opt o)
 		case OPT_CLIENT_CAN_DIFF:
 		case OPT_CLIENT_CAN_FORCE_BACKUP:
 		case OPT_CLIENT_CAN_LIST:
+		case OPT_CLIENT_CAN_MONITOR:
 		case OPT_CLIENT_CAN_RESTORE:
 		case OPT_CLIENT_CAN_VERIFY:
 		case OPT_SERVER_CAN_RESTORE:
@@ -134,6 +144,7 @@ static void check_default(struct conf **c, enum conf_opt o)
 		case OPT_GLOB_AFTER_SCRIPT_PRE:
 		case OPT_ACL:
 		case OPT_XATTR:
+		case OPT_N_FAILURE_BACKUP_FAILOVERS_LEFT:
 			fail_unless(get_int(c[o])==1);
 			break;
 		case OPT_NETWORK_TIMEOUT:
@@ -168,6 +179,7 @@ static void check_default(struct conf **c, enum conf_opt o)
 		case OPT_N_SUCCESS_ARG:
 		case OPT_N_FAILURE_ARG:
 		case OPT_RESTORE_CLIENTS:
+		case OPT_SUPER_CLIENTS:
 		case OPT_KEEP:
 		case OPT_INCEXCDIR:
 		case OPT_INCLUDE:
@@ -193,6 +205,7 @@ static void check_default(struct conf **c, enum conf_opt o)
 		case OPT_LISTEN_STATUS:
 		case OPT_MAX_CHILDREN:
 		case OPT_MAX_STATUS_CHILDREN:
+		case OPT_SERVER_FAILOVER:
 			fail_unless(get_strlist(c[o])==NULL);
 			break;
 		case OPT_PROTOCOL:

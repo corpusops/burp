@@ -11,6 +11,7 @@
 #include "../incexc_send.h"
 #include "../iobuf.h"
 #include "../log.h"
+#include "../pathcmp.h"
 #include "../prepend.h"
 #include "autoupgrade.h"
 #include "extra_comms.h"
@@ -126,7 +127,9 @@ static int send_features(struct asfd *asfd, struct conf **cconfs,
 		   to restore from */
 	  || append_to_feat(&feat, "orig_client:")
 		/* clients can tell the server what kind of system they are. */
-          || append_to_feat(&feat, "uname:"))
+          || append_to_feat(&feat, "uname:")
+          || append_to_feat(&feat, "failover:")
+          || append_to_feat(&feat, "vss_restore:"))
 		goto end;
 
 	/* Clients can receive restore initiated from the server. */
@@ -174,6 +177,9 @@ static int send_features(struct asfd *asfd, struct conf **cconfs,
 		goto end;
 #endif
 
+	if(append_to_feat(&feat, "seed:"))
+		goto end;
+
 	//printf("feat: %s\n", feat);
 
 	if(asfd->write_str(asfd, CMD_GEN, feat))
@@ -202,12 +208,56 @@ static int do_autoupgrade(struct asfd *asfd, struct vers *vers,
 	ret=0;
 	if(os && *os)
 	{
+		// Sanitise path separators
+		for(char *i=os; *i; ++i)
+			if(*i == '/' || *i == '\\' || *i == ':')
+				*i='-';
+
 		ret=autoupgrade_server(asfd, vers->ser,
 			vers->cli, os, get_cntr(globalcs),
 			autoupgrade_dir);
 	}
 end:
 	free_w(&os);
+	return ret;
+}
+
+static int setup_seed(
+	struct asfd *asfd,
+	struct conf **cconfs,
+	struct iobuf *rbuf,
+	const char *what,
+	enum conf_opt opt
+) {
+	int ret=-1;
+	char *tmp=NULL;
+	char *str=NULL;
+
+	str=rbuf->buf+strlen(what)+1;
+	strip_trailing_slashes(&str);
+
+	if(!is_absolute(str))
+	{
+		char msg[128];
+		snprintf(msg, sizeof(msg), "A %s needs to be absolute!", what);
+		log_and_send(asfd, msg);
+		goto end;
+	}
+	if(opt==OPT_SEED_SRC && *str!='/')
+	{
+printf("here: %s\n", str);
+		// More windows hacks - add a slash to the beginning of things
+		// like 'C:'.
+		if(astrcat(&tmp, "/", __func__)
+		  || astrcat(&tmp, str, __func__))
+			goto end;
+		str=tmp;
+	}
+	if(set_string(cconfs[opt], str))
+		goto end;
+	ret=0;
+end:
+	free_w(&tmp);
 	return ret;
 }
 
@@ -280,7 +330,8 @@ static int extra_comms_read(struct async *as,
 			const char *restore_path=get_string(
 				cconfs[OPT_RESTORE_PATH]);
 			// Client will not accept the restore.
-			unlink(restore_path);
+			if (restore_path)
+				unlink(restore_path);
 			if(set_string(cconfs[OPT_RESTORE_PATH], NULL))
 				goto end;
 			logp("Client not accepting server initiated restore.\n");
@@ -406,6 +457,35 @@ static int extra_comms_read(struct async *as,
 			set_int(cconfs[OPT_MESSAGE], 1);
 			set_int(globalcs[OPT_MESSAGE], 1);
 		}
+		else if(!strncmp_w(rbuf->buf, "backup_failovers_left="))
+		{
+			int l;
+			l=atoi(rbuf->buf+strlen("backup_failovers_left="));
+			set_int(cconfs[OPT_BACKUP_FAILOVERS_LEFT], l);
+			set_int(globalcs[OPT_BACKUP_FAILOVERS_LEFT], l);
+		}
+		else if(!strncmp_w(rbuf->buf, "seed_src="))
+		{
+			if(setup_seed(asfd, cconfs,
+				rbuf, "seed_src", OPT_SEED_SRC))
+					goto end;
+		}
+		else if(!strncmp_w(rbuf->buf, "seed_dst="))
+		{
+			if(setup_seed(asfd, cconfs,
+				rbuf, "seed_dst", OPT_SEED_DST))
+					goto end;
+		}
+		else if(!strncmp_w(rbuf->buf, "vss_restore=off"))
+		{
+			set_int(cconfs[OPT_VSS_RESTORE], VSS_RESTORE_OFF);
+			set_int(globalcs[OPT_VSS_RESTORE], VSS_RESTORE_OFF);
+		}
+		else if(!strncmp_w(rbuf->buf, "vss_restore=strip"))
+		{
+			set_int(cconfs[OPT_VSS_RESTORE], VSS_RESTORE_OFF_STRIP);
+			set_int(globalcs[OPT_VSS_RESTORE], VSS_RESTORE_OFF_STRIP);
+		}
 		else
 		{
 			iobuf_log_unexpected(rbuf, __func__);
@@ -429,6 +509,26 @@ static int vers_init(struct vers *vers, struct conf **cconfs)
 	  || (vers->directory_tree=version_to_long("1.3.6"))<0
 	  || (vers->burp2=version_to_long("2.0.0"))<0
 	  || (vers->counters_json=version_to_long("2.0.46"))<0);
+}
+
+static int check_seed(struct asfd *asfd, struct conf **cconfs)
+{
+	char msg[128]="";
+	const char *src=get_string(cconfs[OPT_SEED_SRC]);
+	const char *dst=get_string(cconfs[OPT_SEED_DST]);
+	if(!src && !dst)
+		return 0;
+	if(src && dst)
+	{
+		logp("Seeding '%s' -> '%s'\n", src, dst);
+		return 0;
+	}
+	snprintf(msg, sizeof(msg),
+		"You must specify %s and %s options together, or not at all.",
+			cconfs[OPT_SEED_SRC]->field,
+			cconfs[OPT_SEED_DST]->field);
+	log_and_send(asfd, msg);
+	return -1;
 }
 
 int extra_comms(struct async *as,
@@ -538,6 +638,9 @@ int extra_comms(struct async *as,
 			set_e_rshash(cconfs[OPT_RSHASH], RSHASH_MD4);
 		}
 	}
+
+	if(check_seed(asfd, cconfs))
+		goto error;
 
 	return 0;
 error:

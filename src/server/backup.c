@@ -14,6 +14,7 @@
 #include "auth.h"
 #include "backup_phase1.h"
 #include "backup_phase3.h"
+#include "bu_get.h"
 #include "compress.h"
 #include "delete.h"
 #include "sdirs.h"
@@ -150,25 +151,39 @@ static int backup_phase4_server(struct sdirs *sdirs, struct conf **cconfs)
 	}
 }
 
-static char *get_bno_from_sdirs(struct sdirs *sdirs)
+static int get_bno_from_sdirs(struct sdirs *sdirs)
 {
 	char *cp=NULL;
 	// Should be easier than this.
 	if(!(cp=strrchr(sdirs->rworking, '/')))
-		return NULL;
-	return cp+1;
+		return 0;
+	return atoi(cp+1);
 }
 
-static void set_cntr_bno(struct cntr *cntr, struct sdirs *sdirs)
+static uint64_t get_new_bno(struct sdirs *sdirs)
 {
-	char *bno=get_bno_from_sdirs(sdirs);
-	if(!bno)
-		return;
-	cntr->bno=atoi(bno);
+	uint64_t index=0;
+	struct bu *bu=NULL;
+	struct bu *bu_list=NULL;
+
+	// Want to prefix the timestamp with an index that increases by
+	// one each time. This makes it far more obvious which backup depends
+	// on which - even if the system clock moved around.
+
+	// This function orders the array with the highest index number last.
+	if(bu_get_list(sdirs, &bu_list))
+		return -1;
+	for(bu=bu_list; bu; bu=bu->next)
+		if(!bu->next)
+			index=bu->bno;
+	bu_list_free(&bu_list);
+
+	return index+1;
 }
 
 static int do_backup_server(struct async *as, struct sdirs *sdirs,
-	struct conf **cconfs, const char *incexc, int resume)
+	struct conf **cconfs, const char *incexc, int resume,
+	uint64_t bno_new)
 {
 	int ret=0;
 	int do_phase2=1;
@@ -185,20 +200,23 @@ static int do_backup_server(struct async *as, struct sdirs *sdirs,
 		if(open_log(asfd, sdirs, cconfs, resume))
 			goto error;
 
-		set_cntr_bno(cntr, sdirs);
+		if(!(cntr->bno=get_bno_from_sdirs(sdirs)))
+		{
+			logp("Could not get old backup number when resuming.");
+			goto error;
+		}
 	}
 	else
 	{
 		// Not resuming - need to set everything up fresh.
-		if(sdirs_create_real_working(sdirs,
+		cntr->bno=bno_new;
+		if(sdirs_create_real_working(sdirs, bno_new,
 			get_string(cconfs[OPT_TIMESTAMP_FORMAT]))
 		  || sdirs_get_real_manifest(sdirs, protocol))
 			goto error;
 
 		if(open_log(asfd, sdirs, cconfs, resume))
 			goto error;
-
-		set_cntr_bno(cntr, sdirs);
 
 		if(write_incexc(sdirs->rworking, incexc))
 		{
@@ -251,6 +269,12 @@ static int do_backup_server(struct async *as, struct sdirs *sdirs,
 		goto error;
 	}
 
+	// Write backup_stats before flipping the symlink, so that is there
+	// even if phase4 is interrupted.
+	cntr_set_bytes(cntr, asfd);
+	if(cntr_stats_to_file(cntr, sdirs->working, ACTION_BACKUP))
+		goto error;
+
 	if(do_rename(sdirs->working, sdirs->finishing))
 		goto error;
 
@@ -260,8 +284,7 @@ static int do_backup_server(struct async *as, struct sdirs *sdirs,
 		goto error;
 	}
 
-	cntr_print(cntr, ACTION_BACKUP, asfd);
-	cntr_stats_to_file(cntr, sdirs->rworking, ACTION_BACKUP);
+	cntr_print(cntr, ACTION_BACKUP);
 
 	if(protocol==PROTO_2)
 	{
@@ -303,12 +326,13 @@ int run_backup(struct async *as, struct sdirs *sdirs, struct conf **cconfs,
 	const char *incexc, int *timer_ret, int resume)
 {
 	int ret;
+	uint64_t bno_new;
 	char okstr[32]="";
 	struct asfd *asfd=as->asfd;
 	struct iobuf *rbuf=asfd->rbuf;
 	const char *cname=get_string(cconfs[OPT_CNAME]);
 
-	if(get_string(cconfs[OPT_RESTORE_CLIENT]))
+	if(get_string(cconfs[OPT_SUPER_CLIENT]))
 	{
 		// This client is not the original client, so a backup might
 		// cause all sorts of trouble.
@@ -352,11 +376,21 @@ int run_backup(struct async *as, struct sdirs *sdirs, struct conf **cconfs,
 			CMD_GEN, "Forced backup is not allowed");
 	}
 
+	if((bno_new=get_new_bno(sdirs))<0)
+		return -1;
+	if(get_string(cconfs[OPT_SEED_SRC])
+	  && get_string(cconfs[OPT_SEED_DST])
+	  && bno_new!=1)
+	{
+		log_and_send(asfd, "When seeding, there must be no previous backups for this client\n");
+		return -1;
+	}
+
 	snprintf(okstr, sizeof(okstr), "%s:%d",
 		resume?"resume":"ok", get_int(cconfs[OPT_COMPRESSION]));
 	if(asfd->write_str(asfd, CMD_GEN, okstr)) return -1;
 
-	if((ret=do_backup_server(as, sdirs, cconfs, incexc, resume)))
+	if((ret=do_backup_server(as, sdirs, cconfs, incexc, resume, bno_new)))
 		goto end;
 
 	if((ret=delete_backups(sdirs, cname,

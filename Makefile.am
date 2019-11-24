@@ -14,7 +14,6 @@ EXTRA_DIST = \
 	configs/server/backup_tool_script.in \
 	configs/certs/CA/CA.cnf.in \
 	configs/certs/CA/burp_ca.in \
-	debian \
 	freebsd \
 	rhel \
 	opensuse \
@@ -441,7 +440,7 @@ clean-local-check:
 $(configs): Makefile
 
 $(PACKAGE_TARNAME): main
-	$(AM_V_at)mv -v main $(PACKAGE_TARNAME)
+	$(AM_V_at)mv -fv main $(PACKAGE_TARNAME)
 
 $(PACKAGE_TARNAME).conf:
 	$(AM_V_at)rm -f $@

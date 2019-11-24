@@ -32,10 +32,12 @@ static const char *server_supports_autoupgrade(const char *feat)
 #include <librsync.h>
 
 int extra_comms_client(struct async *as, struct conf **confs,
-	enum action *action, char **incexc)
+	enum action *action, struct strlist *failover, char **incexc)
 {
 	int ret=-1;
 	char *feat=NULL;
+	char *seed_src=NULL;
+	char *seed_dst=NULL;
 	struct asfd *asfd;
 	struct iobuf *rbuf;
 	const char *orig_client=NULL;
@@ -89,7 +91,7 @@ int extra_comms_client(struct async *as, struct conf **confs,
 				goto end;
 			if(*incexc)
 			{
-				if(conf_parse_incexcs_buf(confs, *incexc))
+				if(conf_parse_incexcs_srestore(confs, *incexc))
 					goto end;
 				*action=ACTION_RESTORE;
 				log_restore_settings(confs, 1);
@@ -177,11 +179,16 @@ int extra_comms_client(struct async *as, struct conf **confs,
 #endif
 		if(clientos)
 		{
-			char msg[128]="";
-			snprintf(msg, sizeof(msg),
-				"uname=%s", clientos);
-			if(asfd->write_str(asfd, CMD_GEN, msg))
+			char *msg=NULL;
+			if(astrcat(&msg, "uname=", __func__)
+			  || astrcat(&msg, clientos, __func__))
 				goto end;
+			if(asfd->write_str(asfd, CMD_GEN, msg))
+			{
+				free_w(&msg);
+				goto end;
+			}
+			free_w(&msg);
 		}
 	}
 
@@ -227,6 +234,17 @@ int extra_comms_client(struct async *as, struct conf **confs,
 		set_protocol(confs, PROTO_2);
 	}
 
+        if(get_protocol(confs)==PROTO_2
+          && get_string(confs[OPT_ENCRYPTION_PASSWORD]))
+	{
+		char msg[64]="";
+		snprintf(msg, sizeof(msg),
+			"%s is not supported in protocol 2",
+				confs[OPT_ENCRYPTION_PASSWORD]->field);
+		log_and_send(asfd, msg);
+		goto end;
+	}
+
 	if(server_supports(feat, ":msg:"))
 	{
 		set_int(confs[OPT_MESSAGE], 1);
@@ -245,6 +263,62 @@ int extra_comms_client(struct async *as, struct conf **confs,
 	else
 #endif
 		set_e_rshash(confs[OPT_RSHASH], RSHASH_MD4);
+
+	if(server_supports(feat, ":failover:"))
+	{
+		if(*action==ACTION_BACKUP
+		  || *action==ACTION_BACKUP_TIMED)
+		{
+			char msg[64]="";
+			int left=0;
+			struct strlist *f=NULL;
+			for(f=failover; f; f=f->next)
+				left++;
+			snprintf(msg, sizeof(msg),
+				"backup_failovers_left=%d", left);
+			if(asfd->write_str(asfd, CMD_GEN, msg))
+				goto end;
+		}
+	}
+
+	seed_src=get_string(confs[OPT_SEED_SRC]);
+	seed_dst=get_string(confs[OPT_SEED_DST]);
+	if(seed_src && *seed_src
+	  && seed_dst && *seed_dst
+	  && server_supports(feat, ":seed:"))
+	{
+		char *msg=NULL;
+		logp("Seeding from %s\n", seed_src);
+		if(astrcat(&msg, "seed_src=", __func__)
+		  || astrcat(&msg, seed_src, __func__)
+		  || asfd->write_str(asfd, CMD_GEN, msg))
+		{
+			free_w(&msg);
+			goto end;
+		}
+		free_w(&msg);
+		logp("Seeding to %s\n", seed_dst);
+		if(astrcat(&msg, "seed_dst=", __func__)
+		  || astrcat(&msg, seed_dst, __func__)
+		  || asfd->write_str(asfd, CMD_GEN, msg))
+		{
+			free_w(&msg);
+			goto end;
+		}
+		free_w(&msg);
+	}
+
+	if(server_supports(feat, ":vss_restore:"))
+	{
+		enum vss_restore vss_restore=(enum vss_restore)
+			get_int(confs[OPT_VSS_RESTORE]);
+		if(vss_restore==VSS_RESTORE_OFF
+		  && asfd->write_str(asfd, CMD_GEN, "vss_restore=off"))
+			goto end;
+		if(vss_restore==VSS_RESTORE_OFF_STRIP
+		  && asfd->write_str(asfd, CMD_GEN, "vss_restore=strip"))
+			goto end;
+	}
 
 	if(asfd->write_str(asfd, CMD_GEN, "extra_comms_end")
 	  || asfd_read_expect(asfd, CMD_GEN, "extra_comms_end ok"))

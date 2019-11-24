@@ -1,14 +1,12 @@
 #include "../burp.h"
 #include "sdirs.h"
 #include "../alloc.h"
-#include "../bu.h"
 #include "../conf.h"
 #include "../fsops.h"
 #include "../lock.h"
 #include "../log.h"
 #include "../prepend.h"
 #include "timestamp.h"
-#include "bu_get.h"
 
 #define RELINK_DIR	"relink"
 
@@ -74,37 +72,17 @@ int sdirs_get_real_working_from_symlink(struct sdirs *sdirs)
 	return 0;
 }
 
-static uint64_t get_new_index(struct sdirs *sdirs)
-{
-	uint64_t index=0;
-	struct bu *bu=NULL;
-	struct bu *bu_list=NULL;
-
-	// Want to prefix the timestamp with an index that increases by
-	// one each time. This makes it far more obvious which backup depends
-	// on which - even if the system clock moved around.
-
-	// This function orders the array with the highest index number last.
-	if(bu_get_list(sdirs, &bu_list))
-		return -1;
-	for(bu=bu_list; bu; bu=bu->next)
-		if(!bu->next)
-			index=bu->bno;
-	bu_list_free(&bu_list);
-
-	return index+1;
-}
-
-int sdirs_create_real_working(struct sdirs *sdirs, const char *timestamp_format)
-{
-	uint64_t index;
+int sdirs_create_real_working(
+	struct sdirs *sdirs,
+	uint64_t bno,
+	const char *timestamp_format
+) {
 	char tstmp[64]="";
 	char fname[64]="";
 
 	if(build_path_w(sdirs->working))
 		return -1;
-	index=get_new_index(sdirs);
-	if(timestamp_get_new(index,
+	if(timestamp_get_new(bno,
 		tstmp, sizeof(tstmp), fname, sizeof(fname), timestamp_format)
 	  || free_prepend_s(&sdirs->rworking, sdirs->client, fname)
 	  || free_prepend_s(&sdirs->treepath,
@@ -143,6 +121,7 @@ int sdirs_create_real_working(struct sdirs *sdirs, const char *timestamp_format)
 static int do_common_dirs(struct sdirs *sdirs, const char *manual_delete)
 {
 	if(!(sdirs->created=prepend_s(sdirs->client, ".created"))
+	  || !(sdirs->command=prepend_s(sdirs->client, ".command"))
 	  || !(sdirs->working=prepend_s(sdirs->client, "working"))
 	  || !(sdirs->finishing=prepend_s(sdirs->client, "finishing"))
 	  || !(sdirs->current=prepend_s(sdirs->client, "current"))
@@ -272,6 +251,7 @@ void sdirs_free_content(struct sdirs *sdirs)
         free_w(&sdirs->clients);
         free_w(&sdirs->client);
         free_w(&sdirs->created);
+        free_w(&sdirs->command);
 
         free_w(&sdirs->working);
         free_w(&sdirs->rworking);

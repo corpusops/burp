@@ -38,8 +38,19 @@ static int asfd_alloc_buf(struct asfd *asfd, char **buf)
 }
 
 static int extract_buf(struct asfd *asfd,
-	unsigned int len, unsigned int offset)
+	size_t len, size_t offset)
 {
+	if(offset+len>=asfd->bufmaxsize)
+	{
+		logp("%s: offset(%lu)+len(%lu)>=asfd->bufmaxsize(%lu) in %s!",
+			asfd->desc,
+			(unsigned long)offset,
+			(unsigned long)len,
+			(unsigned long)asfd->bufmaxsize,
+			__func__);
+		return -1;
+	}
+
 	if(!(asfd->rbuf->buf=(char *)malloc_w(len+1, __func__)))
 		return -1;
 	if(!(memcpy(asfd->rbuf->buf, asfd->readbuf+offset, len)))
@@ -109,10 +120,16 @@ static int parse_readbuf_standard(struct asfd *asfd)
 			asfd->desc, asfd->readbuf, __func__);
 		return -1;
 	}
+	if(s>=asfd->bufmaxsize)
+	{
+		logp("%s: given buffer length '%d', which is too big!\n",
+			asfd->desc, s);
+		return -1;
+	}
 	if(asfd->readbuflen>=s+5)
 	{
 		asfd->rbuf->cmd=(enum cmd)command;
-		if(extract_buf(asfd, s, 5))
+		if(extract_buf(asfd, (size_t)s, 5))
 			return -1;
 	}
 	return 0;
@@ -189,14 +206,16 @@ static int asfd_do_read_ssl(struct asfd *asfd)
 	asfd->read_blocked_on_write=0;
 
 	ERR_clear_error();
-	r=SSL_read(asfd->ssl,
-	  asfd->readbuf+asfd->readbuflen, asfd->bufmaxsize-asfd->readbuflen);
+	r=SSL_read(
+		asfd->ssl,
+		asfd->readbuf+asfd->readbuflen,
+		asfd->bufmaxsize-asfd->readbuflen
+	);
 
 	switch((e=SSL_get_error(asfd->ssl, r)))
 	{
 		case SSL_ERROR_NONE:
 			asfd->readbuflen+=r;
-			asfd->readbuf[asfd->readbuflen]='\0';
 			asfd->rcvd+=r;
 			break;
 		case SSL_ERROR_ZERO_RETURN:

@@ -201,7 +201,7 @@ void add_fd_to_sets(int fd, fd_set *read_set, fd_set *write_set, fd_set *err_set
 }
 
 #ifndef HAVE_WIN32
-static int get_address_and_port(struct sockaddr_storage *addr,
+int get_address_and_port(struct sockaddr_storage *addr,
 	char *addrstr, size_t len, uint16_t *port)
 {
 	struct sockaddr_in *s4;
@@ -226,18 +226,6 @@ static int get_address_and_port(struct sockaddr_storage *addr,
 	return 0;
 }
 #endif
-
-int log_peer_address(struct sockaddr_storage *addr)
-{
-#ifndef HAVE_WIN32
-	uint16_t port=0;
-	char addrstr[INET6_ADDRSTRLEN]="";
-	if(get_address_and_port(addr, addrstr, INET6_ADDRSTRLEN, &port))
-		return -1;
-	logp("Connect from peer: %s:%d\n", addrstr, port);
-#endif
-	return 0;
-}
 
 int set_peer_env_vars(struct sockaddr_storage *addr)
 {
@@ -311,8 +299,8 @@ int init_client_socket(const char *host, const char *port)
 	freeaddrinfo(result);
 	if(!rp)
 	{
-		/* host==NULL and AI_PASSIVE not set -> loopback */
-		logp("could not connect to %s:%s\n",
+		// host==NULL and AI_PASSIVE not set -> loopback
+		logp("Could not connect to %s:%s\n",
 			host?host:"loopback", port);
 		close_fd(&rfd);
 		return -1;
@@ -481,6 +469,9 @@ int receive_a_file(struct asfd *asfd, const char *path, struct cntr *cntr)
 	bfd->set_vss_strip(bfd, 0);
 #endif
 	if(bfd->open(bfd, asfd, path,
+#ifdef O_NOFOLLOW
+		O_NOFOLLOW |
+#endif
 		O_WRONLY | O_CREAT | O_TRUNC | O_BINARY,
 		S_IRUSR | S_IWUSR))
 	{
@@ -647,7 +638,8 @@ char *charreplace_noescaped_w(const char *orig, char search, const char *replace
 		{
 			if(i<=0 || orig[i-1]!='\\')
 			{
-				tmp=strncpy(tmp, replace, len_replace)+len_replace;
+				tmp=(char *)memcpy(tmp, replace, len_replace);
+				tmp+=len_replace;
 				continue;
 			}
 		}

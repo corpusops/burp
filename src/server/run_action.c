@@ -75,13 +75,12 @@ error:
 
 static int client_can_generic(struct conf **cconfs, enum conf_opt o)
 {
-	// Always allow restore_clients, unless we are talking about forcing
-	// a backup.
-	if(get_string(cconfs[OPT_RESTORE_CLIENT])
-	  && o!=OPT_CLIENT_CAN_FORCE_BACKUP)
-		return 1;
-
 	return get_int(cconfs[o]);
+}
+
+int client_can_monitor(struct conf **cconfs)
+{
+	return client_can_generic(cconfs, OPT_CLIENT_CAN_MONITOR);
 }
 
 static int client_can_restore(struct conf **cconfs)
@@ -89,7 +88,7 @@ static int client_can_restore(struct conf **cconfs)
 	const char *restore_path=get_string(cconfs[OPT_RESTORE_PATH]);
 
 	// If there is a restore file on the server, it is always OK.
-	if(is_reg_lstat(restore_path)==1)
+	if(restore_path && is_reg_lstat(restore_path)==1)
 	{
 		// Remove the file.
 		unlink(restore_path);
@@ -391,16 +390,17 @@ static const char *buf_to_notify_str(struct iobuf *rbuf)
 {
 	const char *buf=rbuf->buf;
 	if(!strncmp_w(buf, "backup")) return "backup";
+	else if(!strncmp_w(buf, "delete")) return "delete";
+	else if(!strncmp_w(buf, "diff")) return "diff";
+	else if(!strncmp_w(buf, "list")) return "list";
 	else if(!strncmp_w(buf, "restore")) return "restore";
 	else if(!strncmp_w(buf, "verify")) return "verify";
-	else if(!strncmp_w(buf, "delete")) return "delete";
-	else if(!strncmp_w(buf, "list")) return "list";
 	else return "unknown";
 }
 
-static int maybe_write_first_created_file(struct sdirs *sdirs)
+static int maybe_write_first_created_file(struct sdirs *sdirs,
+	const char *tstmp)
 {
-	char tstmp[48]="";
 	if(is_reg_lstat(sdirs->created)>0
 	  || is_lnk_lstat(sdirs->current)>0
 	  || is_lnk_lstat(sdirs->currenttmp)>0
@@ -408,12 +408,28 @@ static int maybe_write_first_created_file(struct sdirs *sdirs)
 	  || is_lnk_lstat(sdirs->finishing)>0)
 		return 0;
 
-	if(timestamp_get_new(/*index*/0,
-		tstmp, sizeof(tstmp),
-		/*bufforfile*/NULL, /*bs*/0,
-		/*format*/NULL))
-			return -1;
 	return timestamp_write(sdirs->created, tstmp);
+}
+
+static int log_command(struct async *as,
+	struct sdirs *sdirs, struct conf **cconfs, const char *tstmp)
+{
+	struct fzp *fzp=NULL;
+	struct asfd *asfd=as->asfd;
+	struct iobuf *rbuf=asfd->rbuf;
+	char *cname=get_string(cconfs[OPT_CONNECT_CLIENT]);
+
+	if(rbuf->cmd!=CMD_GEN)
+		return 0;
+
+	if(!(fzp=fzp_open(sdirs->command, "a")))
+		return -1;
+	fzp_printf(fzp, "%s %s %s %s\n", tstmp, asfd->peer_addr, cname,
+		iobuf_to_printable(rbuf));
+	if(fzp_close(&fzp))
+		return -1;
+
+	return 0;
 }
 
 static int run_action_server_do(struct async *as, struct sdirs *sdirs,
@@ -422,6 +438,7 @@ static int run_action_server_do(struct async *as, struct sdirs *sdirs,
 	int ret;
 	int resume=0;
 	char msg[256]="";
+	char tstmp[48]="";
 	struct iobuf *rbuf=as->asfd->rbuf;
 
 	// Make sure some directories exist.
@@ -433,8 +450,16 @@ static int run_action_server_do(struct async *as, struct sdirs *sdirs,
 		return -1;
 	}
 
-	if(maybe_write_first_created_file(sdirs))
-		return -1;
+	if(timestamp_get_new(/*index*/0,
+		tstmp, sizeof(tstmp),
+		/*bufforfile*/NULL, /*bs*/0,
+		/*format*/NULL))
+			return -1;
+
+	// Carry on if these fail, otherwise you will not be able to restore
+	// from readonly backups.
+	maybe_write_first_created_file(sdirs, tstmp);
+	log_command(as, sdirs, cconfs, tstmp);
 
 	if(rbuf->cmd!=CMD_GEN)
 		return unknown_command(as->asfd, __func__);
@@ -502,6 +527,14 @@ static int run_action_server_do(struct async *as, struct sdirs *sdirs,
 	// Only backup action left to deal with.
 	ret=run_backup(as, sdirs,
 		cconfs, incexc, timer_ret, resume);
+
+	// If this is a backup failure and the client has more servers
+	// to failover to, do not notify.
+	if(ret
+	  && get_int(cconfs[OPT_N_FAILURE_BACKUP_FAILOVERS_LEFT])
+	  && get_int(cconfs[OPT_BACKUP_FAILOVERS_LEFT]))
+		return ret;
+
 	if(*timer_ret<0)
 		maybe_do_notification(as->asfd, ret,
 			"", "error running timer script",
