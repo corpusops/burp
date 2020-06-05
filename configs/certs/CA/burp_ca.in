@@ -59,9 +59,9 @@ name=
 case "$(uname -s)" in
 	SunOS) name="$(check-hostname | cut -d' ' -f7)" ;;
 	AIX) name="$(host "$(hostname)" | awk '{ print $1}')" ;;
-	NetBSD) name="$(hostname)" ;;
-	OpenBSD) name="$(uname -n)" ;;
-	*) name="$(hostname -f)" ;;
+	NetBSD) name="$(hostname || true)" ;;
+	OpenBSD) name="$(uname -n || true)" ;;
+	*) name="$(hostname -f || true)" ;;
 esac
 # Try NetBSD style.
 [ -n "$name" ] || name="$(hostname)"
@@ -190,8 +190,6 @@ if [ "$init" = "yes" ]; then
 	umask "$def_umask"
 	TEMP="$(mktemp "/tmp/@name@_ca.tmp.XXXXXXXX" || echo "/tmp/@name@_ca.tmp.$$")"
 	cat <<-EOF > "$TEMP"
-	RANDFILE                = /dev/urandom
-
 	[ req ]
 	distinguished_name      = req_distinguished_name
 	prompt                  = no
@@ -237,7 +235,6 @@ if [ "$request" = "yes" ]; then
         [ -d "$(dirname "$requestpath")" ] || mkdir "$(dirname "$requestpath")"
 	TEMP="$(mktemp "/tmp/@name@_ca.tmp.XXXXXXXX" || echo "/tmp/@name@_ca.tmp.$$")"
 	cat <<-EOF > "$TEMP"
-	RANDFILE                = /dev/urandom
         req_extensions          = v3_req
 
 	[ req ]

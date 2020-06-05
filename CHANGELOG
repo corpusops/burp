@@ -1,3 +1,52 @@
+2020-05-01 Changes in burp-2.3.28:
+  * 864: Separate files-only release for windows.
+  * 861: Try to make hostname calls in burp_ca more robust.
+  * 854: Fix "Directory: '(null)'" log message.
+  * 855: Talk about the -d option in docs/restoring.txt.
+
+2020-05-01 Changes in burp-2.3.26:
+  * From Dan Tihelka:
+    - Initial systemd socket activation support proof-of-concept.
+  * 467: Sherlock221B's suggestion for accelerating protocol2 rabin:
+         Skip min block size minus window size.
+  * Socket activation fixes and cleanup.
+  * 860: Fix incorrect cron summary example.
+
+2020-03-01 Changes in burp-2.3.24:
+  * 848: Protocol 2 - warn and skip on verify/restore of unsupported
+    file types.
+  * From Dan Tihelka:
+    Improve systemd services a bit
+    - Use type=simple and foreground mode in the server's service file.
+      The forking is not necessary under systemd and it also nicely catches all
+      the stdout/stderr messages when running in "foreground"
+    - Create client service and timer units.
+      The client is triggered every 30 minutes by the timer unit.
+  * Move systemd files to a generic systemd directory.
+    - Remove unmaintained distro-specific init scripts and specfiles.
+
+2020-02-01 Changes in burp-2.3.22:
+  * 845: Fix possible segfault in server-side listing.
+  * 841: Fix protocol2 bug where cname was overwritten.
+  * Man page and README tweaks.
+
+2020-01-01 Changes in burp-2.3.20:
+  * 597: Protocol 2 - prune the sparse index.
+  * 800: Correct counters after resume.
+  * 837: Fix bug where user= config causes exit.
+  * Tidy up README.
+  * From Orsiris de Jong:
+    - Add Centos 8 building instructions to README.
+  * From Bob Ryan:
+    - Add smb2 magic id.
+
+2019-12-01 Changes in burp-2.3.18:
+  * 30: Add option to take a list of paths for restore.
+  * Add '-a p' option, for outputing parseable file lists.
+  * 832: Try to be more generic about IO_REPARSE tags.
+  * From Vitalio:
+    - Implement support of keeping readall capabilities after UID/GID switch.
+
 2019-10-06 Changes in burp-2.3.16:
   * 832: Avoid 'could not stat' on OneDrive reparse points.
   * Upgrade Windows depkgs to:

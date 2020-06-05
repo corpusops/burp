@@ -55,7 +55,9 @@ static void usage_client(void)
 	printf("                  l: list (this is the default when an action is not given)\n");
 	printf("                  L: long list\n");
 	printf("                  m: monitor interface\n");
+	printf("                  p: parseable list\n");
 	printf("                  r: restore\n");
+	printf("                  R: Restore (matching ordered paths on stdin)\n");
 #ifndef HAVE_WIN32
 	printf("                  s: status monitor (ncurses)\n");
 	printf("                  S: status monitor snapshot\n");
@@ -63,6 +65,7 @@ static void usage_client(void)
 	printf("                  t: timed backup\n");
 	printf("                  T: check backup timer, but do not actually backup\n");
 	printf("                  v: verify\n");
+	printf("                  V: Verify (matching ordered paths on stdin)\n");
 	printf("  -b <number>    Backup number (default: the most recent backup).\n");
 	printf("  -c <path>      Path to conf file (default: %s).\n", config_default_path());
 	printf("  -d <directory> Directory to restore to, or directory to list.\n");
@@ -141,7 +144,8 @@ static void usage(void)
 	usage_client();
 }
 
-static int parse_action(enum action *act, const char *optarg)
+static int parse_action(enum action *act, const char *optarg,
+	struct strlist **cli_overrides)
 {
 	if(!strncmp(optarg, "backup", 1))
 		*act=ACTION_BACKUP;
@@ -151,12 +155,24 @@ static int parse_action(enum action *act, const char *optarg)
 		*act=ACTION_TIMER_CHECK;
 	else if(!strncmp(optarg, "restore", 1))
 		*act=ACTION_RESTORE;
+	else if(!strncmp(optarg, "Restore", 1))
+	{
+		*act=ACTION_RESTORE;
+		strlist_add(cli_overrides, "restore_list=/dev/stdin", 0);
+	}
 	else if(!strncmp(optarg, "verify", 1))
 		*act=ACTION_VERIFY;
+	else if(!strncmp(optarg, "Verify", 1))
+	{
+		*act=ACTION_VERIFY;
+		strlist_add(cli_overrides, "restore_list=/dev/stdin", 0);
+	}
 	else if(!strncmp(optarg, "list", 1))
 		*act=ACTION_LIST;
 	else if(!strncmp(optarg, "List", 1))
 		*act=ACTION_LIST_LONG;
+	else if(!strncmp(optarg, "parseablelist", 1))
+		*act=ACTION_LIST_PARSEABLE;
 	else if(!strncmp(optarg, "status", 1))
 		*act=ACTION_STATUS;
 	else if(!strncmp(optarg, "Status", 1))
@@ -308,6 +324,7 @@ int real_main(int argc, char *argv[])
 	int test_confs=0;
 	enum burp_mode mode;
 	struct strlist *cli_overrides=NULL;
+	int keep_readall_caps=0;
 
 	log_init(argv[0]);
 #ifndef HAVE_WIN32
@@ -324,7 +341,8 @@ int real_main(int argc, char *argv[])
 		switch(option)
 		{
 			case 'a':
-				if(parse_action(&act, optarg)) goto end;
+				if(parse_action(&act, optarg,
+					&cli_overrides)) goto end;
 				break;
 			case 'b':
 				// The diff command may have two backups
@@ -420,6 +438,9 @@ int real_main(int argc, char *argv[])
 		setvbuf(stdout, NULL, _IONBF, 0);
 	}
 
+	if(act==ACTION_LIST_PARSEABLE)
+		strlist_add(&cli_overrides, "stdout=0", 0);
+
 	conf_set_cli_overrides(cli_overrides);
 	if(!(confs=confs_alloc()))
 		goto end;
@@ -498,6 +519,12 @@ int real_main(int argc, char *argv[])
 			case ACTION_BACKUP:
 			case ACTION_BACKUP_TIMED:
 			case ACTION_TIMER_CHECK:
+#ifdef ENABLE_KEEP_READALL_CAPS_SUPPORT
+				keep_readall_caps=get_int(confs[OPT_READALL]);
+				// readall=1 cannot work with atime=0 (O_NOATIME)
+				if (keep_readall_caps)
+					set_int(confs[OPT_ATIME], 1);
+#endif
 				// Need to get the lock.
 				if(!(lock=get_prog_lock(confs)))
 					goto end;
@@ -509,7 +536,8 @@ int real_main(int argc, char *argv[])
 
 	// Change privileges after having got the lock, for convenience.
 	if(chuser_and_or_chgrp(
-		get_string(confs[OPT_USER]), get_string(confs[OPT_GROUP])))
+		get_string(confs[OPT_USER]), get_string(confs[OPT_GROUP]),
+		keep_readall_caps))
 			return -1;
 
 	set_int(confs[OPT_OVERWRITE], forceoverwrite);

@@ -17,6 +17,10 @@
 #include "run_action.h"
 #include "monitor/status_server.h"
 
+#ifdef HAVE_SYSTEMD
+#include  <systemd/sd-daemon.h>
+#endif
+
 static int hupreload=0;
 static int hupreload_logged=0;
 static int gentleshutdown=0;
@@ -90,6 +94,19 @@ static void log_listen_socket(const char *desc,
 		desc, addr, port, max_children);
 }
 
+static int split_addr(char **address, char **port)
+{
+	char *cp;
+	if(!(cp=strrchr(*address, ':')))
+	{
+		logp("Could not parse '%s'\n", *address);
+		return -1;
+	}
+	*cp='\0';
+	*port=cp+1;
+	return 0;
+}
+
 static int init_listen_socket(struct strlist *address,
 	struct async *mainas, enum asfd_fdtype fdtype, const char *desc)
 {
@@ -103,13 +120,8 @@ static int init_listen_socket(struct strlist *address,
 
 	if(!(a=strdup_w(address->path, __func__)))
 		goto error;
-	if(!(port=strrchr(a, ':')))
-	{
-		logp("Could not parse '%s'\n", address->path);
+	if(split_addr(&a, &port))
 		goto error;
-	}
-	*port='\0';
-	port++;
 
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family=AF_UNSPEC;
@@ -720,11 +732,105 @@ static int maybe_update_status_child_client_lists(struct async *mainas)
 	return update_status_child_client_lists(mainas);
 }
 
+#ifdef HAVE_SYSTEMD
+static int check_addr_for_desc(
+	const struct strlist *addresses,
+	int fd,
+	const char **addr
+) {
+	int port;
+	int ret=-1;
+	char *a=NULL;
+	char *portstr;
+	const struct strlist *address;
+
+	for(address=addresses; address; address=address->next)
+	{
+		free_w(&a);
+		if(!(a=strdup_w(address->path, __func__)))
+			goto end;
+		if(split_addr(&a, &portstr))
+			goto end;
+		port=strtoul(portstr, NULL, 10);
+		if(sd_is_socket_inet(fd, AF_UNSPEC, 0, -1, port))
+		{
+			*addr=address->path;
+			return 0;
+		}
+	}
+end:
+	free_w(&a);
+	return ret;
+}
+
+static int socket_activated_init_listen_sockets(
+	struct async *mainas,
+	struct strlist *addresses,
+	struct strlist *addresses_status
+) {
+	int n=0;
+
+        n=sd_listen_fds(0);
+	if(n<0)
+	{
+		logp("sd_listen_fds() error: %d %s\n",
+			n, strerror(errno));
+		return -1;
+	}
+	else if(!n)
+		return 0;
+
+	logp("Socket activated\n");
+
+	for(int fdnum=SD_LISTEN_FDS_START;
+		fdnum<SD_LISTEN_FDS_START+n; fdnum++)
+	{
+		int fd=-1;
+		const char *desc=NULL;
+		const char *addr=NULL;
+		struct asfd *newfd=NULL;
+		enum asfd_fdtype fdtype=ASFD_FD_SERVER_LISTEN_MAIN;
+
+		if(!check_addr_for_desc(addresses,
+			fdnum, &addr))
+		{
+			desc="server by socket activation";
+			fdtype=ASFD_FD_SERVER_LISTEN_MAIN;
+		}
+		else if(!check_addr_for_desc(addresses_status,
+			fdnum, &addr))
+		{
+			desc="server status by socket activation";
+			fdtype=ASFD_FD_SERVER_LISTEN_STATUS;
+		}
+		else
+		{
+			logp("Strange socket activation fd: %d\n", fdnum);
+			return -1;
+		}
+
+		fd=fdnum;
+		if(!(newfd=setup_asfd(mainas, desc, &fd, addr)))
+			return -1;
+		newfd->fdtype=fdtype;
+
+		// We are definitely in socket activation mode now. Use
+		// gentleshutdown to make it exit when all child fds are gone.
+		gentleshutdown++;
+		gentleshutdown_logged++;
+	}
+
+	return 0;
+}
+#endif
+
 static int run_server(struct conf **confs, const char *conffile)
 {
+#ifdef HAVE_SYSTEMD
+	int socket_activated = 0;
+#endif
 	int ret=-1;
 	SSL_CTX *ctx=NULL;
-	int found_normal_child=0;
 	struct asfd *asfd=NULL;
 	struct async *mainas=NULL;
 	struct strlist *addresses=get_strlist(confs[OPT_LISTEN]);
@@ -745,11 +851,19 @@ static int run_server(struct conf **confs, const char *conffile)
 	  || mainas->init(mainas, 0))
 		goto end;
 
-	if(init_listen_sockets(addresses, mainas,
-		ASFD_FD_SERVER_LISTEN_MAIN, "server")
-	  || init_listen_sockets(addresses_status, mainas,
-		ASFD_FD_SERVER_LISTEN_STATUS, "server status"))
+#ifdef HAVE_SYSTEMD
+	if(socket_activated_init_listen_sockets(mainas,
+		addresses, addresses_status)==-1)
 			goto end;
+#endif
+	if(!mainas->asfd)
+	{
+		if(init_listen_sockets(addresses, mainas,
+			ASFD_FD_SERVER_LISTEN_MAIN, "server")
+		  || init_listen_sockets(addresses_status, mainas,
+			ASFD_FD_SERVER_LISTEN_STATUS, "server status"))
+				goto end;
+	}
 
 	while(!hupreload)
 	{
@@ -769,7 +883,7 @@ static int run_server(struct conf **confs, const char *conffile)
 						if(!get_int(confs[OPT_FORK]))
 						{
 							gentleshutdown++;
-							ret=1;
+							ret=0; // process_incoming_client() finished without errors
 							goto end;
 						}
 						continue;
@@ -821,23 +935,44 @@ static int run_server(struct conf **confs, const char *conffile)
 
 		chld_check_for_exiting(mainas);
 
-		// Leave if we had a SIGUSR1 and there are no children running.
 		if(gentleshutdown)
 		{
+			int n=0;
 			if(!gentleshutdown_logged)
 			{
 				logp("got SIGUSR2 gentle reload signal\n");
 				logp("will shut down once children have exited\n");
 				gentleshutdown_logged++;
 			}
-// FIX THIS:
-// found_normal_child=chld_add_fd_to_normal_sets(confs, &fsr, &fse, &mfd);
-			else if(!found_normal_child)
+
+			for(asfd=mainas->asfd; asfd; asfd=asfd->next)
 			{
-				logp("all children have exited - shutting down\n");
+				if(asfd->pid<=0)
+					continue;
+				n++;
+				break;
+			}
+			if(!n)
+			{
+				logp("All children have exited\n");
 				break;
 			}
 		}
+
+#ifdef HAVE_SYSTEMD
+		if (socket_activated) {
+			// count the number of running childs
+			int n = 0;
+			for(asfd=mainas->asfd; asfd; asfd=asfd->next) {
+				if (asfd->pid > 1)
+					n++;
+			}
+			if (n <= 0) {
+				gentleshutdown++;
+				break;
+			}
+                }
+#endif
 	}
 
 	if(hupreload) logp("got SIGHUP reload signal\n");

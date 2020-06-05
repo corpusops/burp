@@ -129,7 +129,10 @@ static int do_common_dirs(struct sdirs *sdirs, const char *manual_delete)
 	  || !(sdirs->timestamp=prepend_s(sdirs->working, "timestamp"))
 	  || !(sdirs->phase1data=prepend_s(sdirs->working, "phase1.gz"))
 	  || !(sdirs->changed=prepend_s(sdirs->working, "changed"))
-	  || !(sdirs->unchanged=prepend_s(sdirs->working, "unchanged")))
+	  || !(sdirs->unchanged=prepend_s(sdirs->working, "unchanged"))
+	  || !(sdirs->counters_d=prepend_s(sdirs->working, "counters_d"))
+	  || !(sdirs->counters_n=prepend_s(sdirs->working, "counters_n"))
+	  || !(sdirs->restore_list=prepend_s(sdirs->client, "restore_list")))
 		return -1;
 	if(manual_delete)
 	{
@@ -193,16 +196,30 @@ static int do_protocol2_dirs(struct sdirs *sdirs,
 	return 0;
 }
 
-int sdirs_init_from_confs(struct sdirs *sdirs, struct conf **confs)
-{
+int sdirs_init_from_confs_plus_cname(
+	struct sdirs *sdirs,
+	struct conf **confs,
+	const char *cname
+) {
 	return sdirs_init(
 		sdirs,
 		get_protocol(confs),
 		get_string(confs[OPT_DIRECTORY]),
-		get_string(confs[OPT_CNAME]),
+		cname,
 		get_string(confs[OPT_CLIENT_LOCKDIR]),
 		get_string(confs[OPT_DEDUP_GROUP]),
 		get_string(confs[OPT_MANUAL_DELETE])
+	);
+}
+
+int sdirs_init_from_confs(
+	struct sdirs *sdirs,
+	struct conf **confs
+) {
+	return sdirs_init_from_confs_plus_cname(
+		sdirs,
+		confs,
+		get_string(confs[OPT_CNAME])
 	);
 }
 
@@ -241,36 +258,40 @@ error:
 
 void sdirs_free_content(struct sdirs *sdirs)
 {
-        free_w(&sdirs->base);
-        free_w(&sdirs->dedup);
-        free_w(&sdirs->champlock);
-        free_w(&sdirs->champsock);
-        free_w(&sdirs->champlog);
-        free_w(&sdirs->champ_dindex_lock);
-        free_w(&sdirs->data);
-        free_w(&sdirs->clients);
-        free_w(&sdirs->client);
-        free_w(&sdirs->created);
-        free_w(&sdirs->command);
+	free_w(&sdirs->base);
+	free_w(&sdirs->dedup);
+	free_w(&sdirs->champlock);
+	free_w(&sdirs->champsock);
+	free_w(&sdirs->champlog);
+	free_w(&sdirs->champ_dindex_lock);
+	free_w(&sdirs->data);
+	free_w(&sdirs->clients);
+	free_w(&sdirs->client);
+	free_w(&sdirs->created);
+	free_w(&sdirs->command);
 
-        free_w(&sdirs->working);
-        free_w(&sdirs->rworking);
-        free_w(&sdirs->finishing);
-        free_w(&sdirs->current);
-        free_w(&sdirs->currenttmp);
-        free_w(&sdirs->deleteme);
-        free_w(&sdirs->dindex);
-        free_w(&sdirs->dfiles);
-        free_w(&sdirs->cfiles);
-        free_w(&sdirs->global_sparse);
+	free_w(&sdirs->working);
+	free_w(&sdirs->rworking);
+	free_w(&sdirs->finishing);
+	free_w(&sdirs->current);
+	free_w(&sdirs->currenttmp);
+	free_w(&sdirs->deleteme);
+	free_w(&sdirs->dindex);
+	free_w(&sdirs->dfiles);
+	free_w(&sdirs->cfiles);
+	free_w(&sdirs->global_sparse);
 
-        free_w(&sdirs->timestamp);
-        free_w(&sdirs->changed);
-        free_w(&sdirs->unchanged);
+	free_w(&sdirs->timestamp);
+	free_w(&sdirs->changed);
+	free_w(&sdirs->unchanged);
+	free_w(&sdirs->counters_d);
+	free_w(&sdirs->counters_n);
 	free_w(&sdirs->manifest);
 	free_w(&sdirs->rmanifest);
-        free_w(&sdirs->cmanifest);
+	free_w(&sdirs->cmanifest);
 	free_w(&sdirs->phase1data);
+
+	free_w(&sdirs->restore_list);
 
 	free_w(&sdirs->lockdir);
 	lock_free(&sdirs->lock_storage_for_write);

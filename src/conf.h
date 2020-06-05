@@ -6,8 +6,6 @@
 #define CONF_FLAG_INCEXC_RESTORE	0x04
 #define CONF_FLAG_STRLIST_SORTED	0x08
 #define CONF_FLAG_STRLIST_REPLACE	0x10
-#define CONF_FLAG_SERVER_SET		0x20
-#define CONF_FLAG_CLIENT_SET		0x40
 
 enum burp_mode
 {
@@ -135,6 +133,7 @@ enum conf_opt
 	OPT_PASSWORD_CHECK,
 	OPT_MANUAL_DELETE,
 	OPT_RBLK_MEMORY_MAX,
+	OPT_SPARSE_SIZE_MAX,
 	OPT_MONITOR_LOGFILE, // An ncurses client option, from command line.
 	OPT_MONITOR_BROWSE_CACHE,
 	OPT_MONITOR_EXE,
@@ -161,6 +160,7 @@ enum conf_opt
 	OPT_CA_CSR_DIR,
 	OPT_RANDOMISE,
 	OPT_SERVER_CAN_OVERRIDE_INCLUDES,
+	OPT_RESTORE_LIST,
 
 	// This block of client stuff is all to do with what files to backup.
 	OPT_STARTDIR,
@@ -313,6 +313,9 @@ enum conf_opt
 
 	// For testing.
 	OPT_BREAKPOINT,
+
+	// readall capability
+	OPT_READALL,
 
 	OPT_MAX
 };

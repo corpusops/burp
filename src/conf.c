@@ -476,6 +476,9 @@ static int reset_conf(struct conf **c, enum conf_opt o)
 	case OPT_RBLK_MEMORY_MAX:
 	  return sc_u64(c[o], 256*1024*1024, // 256 Mb.
 		CONF_FLAG_CC_OVERRIDE, "rblk_memory_max");
+	case OPT_SPARSE_SIZE_MAX:
+	  return sc_u64(c[o], 256*1024*1024, // 256 Mb.
+		CONF_FLAG_CC_OVERRIDE, "sparse_size_max");
 	case OPT_MONITOR_LOGFILE:
 	  return sc_str(c[o], 0, 0, "monitor_logfile");
 	case OPT_MONITOR_EXE:
@@ -508,6 +511,8 @@ static int reset_conf(struct conf **c, enum conf_opt o)
 	  return sc_str(c[o], 0, 0, "ca_csr_dir");
 	case OPT_RANDOMISE:
 	  return sc_int(c[o], 0, 0, "randomise");
+	case OPT_RESTORE_LIST:
+	  return sc_str(c[o], 0, 0, "restore_list");
 	case OPT_ENABLED:
 	  return sc_int(c[o], 1, CONF_FLAG_CC_OVERRIDE, "enabled");
 	case OPT_SERVER_CAN_OVERRIDE_INCLUDES:
@@ -572,6 +577,8 @@ static int reset_conf(struct conf **c, enum conf_opt o)
 	  return sc_cntr(c[o], 0, 0, "");
 	case OPT_VSS_RESTORE:
 	  return sc_int(c[o], VSS_RESTORE_ON, 0, "");
+	case OPT_READALL:
+	  return sc_int(c[o], 0, CONF_FLAG_CC_OVERRIDE, "readall");
 	case OPT_BREAKPOINT:
 	  return sc_int(c[o], 0,
 		CONF_FLAG_CC_OVERRIDE, "breakpoint");

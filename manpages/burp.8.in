@@ -64,8 +64,8 @@ Run as if forked via a connection from this client.
 
 .SH CLIENT OPTIONS
 .TP
-\fB\-a\fR \fB[b|t|r|l|L|v|delete|e|T|d|D]\fR
-Short for 'action'. The arguments mean backup, timed backup, restore, list, long list, verify, delete, estimate, timer check, diff, or long diff, respectively.
+\fB\-a\fR \fB[b|t|r|R|l|L|p|v|V|delete|e|T|d|D]\fR
+Short for 'action'. The arguments mean backup, timed backup, restore, Restore, list, long list, parseable list, verify, Verify, delete, estimate, timer check, diff, or long diff, respectively.
 .TP
 \fB\-b\fR \fB[number|a]\fR
 Short for 'backup number'. The argument is a number, or 'a' to select all
@@ -212,6 +212,18 @@ Deletes backup number 1. Note that @name@ will not delete backup directories tha
 \fB@name@ \-a d \-b 1 \-b 2\fR
 Report the differences between backups 1 and 2 (use \-a D for more verbosity).
 .TP
+\fB@name@ \-a p \-b 1\fR
+Lists all the files in backup number 1, in @name@-parsable list format. You may append something like '>/tmp/restore_list' to send to a file, edit, then use as an input for restoring. As in the following command:
+.TP
+\fB@name@ \-a r \-b 1 \-o restore_list=/tmp/restore_list\fR
+Restores from backup 7, matching the list of files given in /tmp/restore_list. The files given must be ordered as they would be in the output of a burp list command.
+.TP
+\fB@name@ \-a p -b 6 | @name@ \-a R \-b 7\fR
+Restores from backup 7, matching the list of files on standard input, which is provided by @name@'s list of backup 6 ('\-a R' is shorthand for '\-a r \-o restore_list=\-').
+.TP
+\fB@name@ \-a p -b 6 | @name@ \-a V \-b 7\fR
+Verifies from backup 7, matching the list of files on standard input, which is provided by @name@'s list of backup 6 ('\-a V' is shorthand for '\-a v \-o restore_list=\-').
+.TP
 \fB@name@ \-a s\fR
 Run the ncurses status monitor.
 .TP
@@ -320,6 +332,9 @@ Run as a particular user. This can be overridden by the client configuration fil
 .TP
 \fBgroup=[groupname]\fR
 Run as a particular group. This can be overridden by the client configuration files in clientconfdir on the server.
+.TP
+\fBreadall=[0|1]\fR
+Keep readall capability when dropping root privileges (default 0). When enabled changes default atime to 1.
 .TP
 \fBumask=[umask]\fR
 Set the file creation umask. Default is 0022.
@@ -499,6 +514,9 @@ Set this to 0 if you want to disable all clients. The default is 1. This option 
 .TP
 \fBrblk_memory_max=[B/KB/MB/GB]\fR
 The maximum amount of data from the disk cached in server memory during a protocol2 restore/verify. The default is 256MB. This option can be overridden per-client in the client configuration files in clientconfdir on the server.
+.TP
+\fBsparse_size_max=[B/KB/MB/GB]\fR
+The maximum (uncompressed) size of the sparse file of each protocol 2 dedup_group. The default is 256MB. If the sparse file grows beyond this size, entries will be removed starting with the oldest, unless it is the only one left for a client.
 .TP
 \fBfail_on_warning=[0|1]\fR
 If a warning is generated during a backup, fail the backup. The default is 0. This option can be overridden per-client in the client configuration files in clientconfdir on the server.

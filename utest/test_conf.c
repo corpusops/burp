@@ -72,6 +72,7 @@ static void check_default(struct conf **c, enum conf_opt o)
 		case OPT_MONITOR_EXE:
 		case OPT_SEED_SRC:
 		case OPT_SEED_DST:
+		case OPT_RESTORE_LIST:
 			fail_unless(get_string(c[o])==NULL);
 			break;
 		case OPT_RATELIMIT:
@@ -82,6 +83,7 @@ static void check_default(struct conf **c, enum conf_opt o)
 		case OPT_B_SCRIPT_POST_RUN_ON_FAIL:
 		case OPT_R_SCRIPT_POST_RUN_ON_FAIL:
 		case OPT_SEND_CLIENT_CNTR:
+		case OPT_READALL:
 		case OPT_BREAKPOINT:
 		case OPT_SYSLOG:
 		case OPT_PROGRESS_COUNTER:
@@ -219,6 +221,9 @@ static void check_default(struct conf **c, enum conf_opt o)
 			fail_unless(get_uint64_t(c[o])==0);
 			break;
 		case OPT_RBLK_MEMORY_MAX:
+			fail_unless(get_uint64_t(c[o])==256*1024*1024);
+			break;
+		case OPT_SPARSE_SIZE_MAX:
 			fail_unless(get_uint64_t(c[o])==256*1024*1024);
 			break;
 		case OPT_WORKING_DIR_RECOVERY_METHOD:

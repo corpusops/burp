@@ -5,18 +5,12 @@ AM_CPPFLAGS = -fno-strict-aliasing
 CLEANFILES =
 
 EXTRA_DIST = \
-	android/build-script-android \
-	android/burp_ca \
-	android/README \
 	configs/client/burp.conf.in \
 	configs/server/burp.conf.in \
 	configs/server/summary_script.in \
 	configs/server/backup_tool_script.in \
 	configs/certs/CA/CA.cnf.in \
 	configs/certs/CA/burp_ca.in \
-	freebsd \
-	rhel \
-	opensuse \
 	src/win32 \
 	utest/json_output \
 	$(TESTS)
@@ -118,7 +112,9 @@ main_LDADD = \
 	$(NCURSES_LIBS) \
 	$(OPENSSL_LIBS) \
 	$(RSYNC_LIBS) \
-	$(ZLIBS)
+	$(SYSTEMD_LIBS) \
+	$(ZLIBS) \
+	$(CAP_LIBS)
 
 main_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
@@ -261,9 +257,11 @@ main_SOURCES = \
 	src/server/protocol2/champ_chooser/incoming.c src/server/protocol2/champ_chooser/incoming.h \
 	src/server/protocol2/champ_chooser/scores.c src/server/protocol2/champ_chooser/scores.h \
 	src/server/protocol2/champ_chooser/sparse.c src/server/protocol2/champ_chooser/sparse.h \
+	src/server/protocol2/clist.c src/server/protocol2/clist.h \
 	src/server/protocol2/dpth.c src/server/protocol2/dpth.h \
 	src/server/protocol2/rblk.c src/server/protocol2/rblk.h \
 	src/server/protocol2/restore.c src/server/protocol2/restore.h \
+	src/server/protocol2/sparse_min.c src/server/protocol2/sparse_min.h \
 	src/yajl/yajl.c \
 	src/yajl/yajl_alloc.c src/yajl/yajl_alloc.h \
 	src/yajl/yajl_buf.c src/yajl/yajl_buf.h \
@@ -398,8 +396,10 @@ runner_LDADD = \
 	$(CRYPT_LIBS) \
 	$(NCURSES_LIBS) \
 	$(RSYNC_LIBS) \
+	$(SYSTEMD_LIBS) \
 	$(OPENSSL_LIBS) \
-	$(ZLIBS)
+	$(ZLIBS) \
+	$(CAP_LIBS)
 
 coverage: check
 if WITH_COVERAGE

@@ -37,10 +37,14 @@ struct sdirs
 	char *timestamp;
 	char *changed;
 	char *unchanged;
+	char *counters_d; // file data entries
+	char *counters_n; // non file data entries
 	char *manifest; // Path to manifest (via working).
 	char *rmanifest; // Path to manifest (real).
 	char *cmanifest; // Path to current (previous) manifest.
 	char *phase1data;
+
+	char *restore_list; // For restore file lists from the client.
 
 	char *lockdir;
 	// For backup/delete, lock all storage directories for other
@@ -58,6 +62,12 @@ struct sdirs
 
 extern struct sdirs *sdirs_alloc(void);
 extern int sdirs_init_from_confs(struct sdirs *sdirs, struct conf **confs);
+extern int sdirs_init_from_confs_plus_cname(
+        struct sdirs *sdirs,
+        struct conf **confs,
+        const char *cname
+);
+
 extern int sdirs_init(struct sdirs *sdirs, enum protocol protocol,
 	const char *directory, const char *cname, const char *conf_lockdir,
 	const char *dedup_group, const char *manual_delete);

@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl require a recent autoconf
 AC_PREREQ([2.61])
 
-AC_INIT([Burp],[2.3.16],[https://github.com/grke/burp/issues],[burp],[http://burp.grke.net/])
+AC_INIT([Burp],[2.3.28],[https://github.com/grke/burp/issues],[burp],[http://burp.grke.net/])
 AC_CONFIG_AUX_DIR([autoconf])
 AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -278,6 +278,20 @@ AC_CHECK_HEADERS([librsync.h],
 
 AC_SUBST([RSYNC_LIBS])
 
+dnl -----------------------------------------------------------
+dnl Check for headers, functions and libraries required to
+dnl support keeping readall capabilities
+dnl -----------------------------------------------------------
+
+have_readall=no
+AC_CHECK_HEADERS(sys/prctl.h sys/capability.h)
+AC_CHECK_FUNCS(prctl setreuid)
+AC_CHECK_LIB([cap], [cap_set_proc], [CAP_LIBS="-lcap"], [CAP_LIBS=])
+if test x$CAP_LIBS = x-lcap; then
+   have_readall=yes
+   AC_DEFINE(HAVE_LIBCAP, 1, [Define if you have libcap])
+fi
+AC_SUBST([CAP_LIBS])
 
 dnl --------------------------------------------------------------------------
 dnl Check whether librsync has RS_BLAKE2_SIG_MAGIC
@@ -336,6 +350,57 @@ m4_ifdef([PKG_CHECK_MODULES],
 )
 
 AC_SUBST([NCURSES_LIBS])
+
+
+dnl -----------------------------------------------------------
+dnl Check whether systemd integration is allowed and libsystemd is available
+dnl -----------------------------------------------------------
+
+AC_MSG_CHECKING([whether to enable systemd integration])
+AC_ARG_ENABLE([systemd],
+  [AS_HELP_STRING([--enable-systemd],
+    [enable systemd integration @<:@default=auto@:>@])],
+  [],
+  [enable_systemd=auto]
+)
+AC_MSG_RESULT([$enable_systemd])
+
+have_systemd=no
+
+if test "$enable_systemd" != "no"; then
+  m4_ifdef([PKG_CHECK_MODULES],
+    [
+      PKG_CHECK_MODULES([systemd], [libsystemd],
+        [
+         have_systemd=yes
+         SYSTEMD_LIBS="$systemd_LIBS"
+         CFLAGS="$CFLAGS $systemd_CFLAGS -DHAVE_SYSTEMD=1"
+         AC_DEFINE([HAVE_SYSTEMD], [1], [Set to 1 if we have systemd])
+        ],
+        [
+         AC_CHECK_HEADERS([systemd/sd-daemon.h],
+           [
+             AC_CHECK_LIB([systemd], [sd_listen_fds],
+               [
+                 SYSTEMD_LIBS="-lsystemd"
+                 have_systemd=yes
+                 AC_DEFINE([HAVE_SYSTEMD], [1], [Set to 1 if we have systemd])
+               ]
+             )
+           ]
+           [
+             if test "$enable_systemd" = "yes"; then
+               AC_MSG_ERROR([systemd integration cannot be enabled; perhaps systemd is not installed?])
+             fi
+           ]
+         )
+        ]
+      )
+    ]
+  )
+
+  AC_SUBST([SYSTEMD_LIBS])
+fi
 
 
 dnl -----------------------------------------------------------
@@ -536,6 +601,8 @@ AC_MSG_NOTICE([                   acl: ${have_acl}])
 AC_MSG_NOTICE([                 crypt: ${have_crypt}])
 AC_MSG_NOTICE([                  ipv6: ${enable_ipv6}])
 AC_MSG_NOTICE([               ncurses: ${have_ncurses}])
+AC_MSG_NOTICE([               systemd: ${have_systemd}])
+AC_MSG_NOTICE([               readall: ${have_readall}])
 AC_MSG_NOTICE([               openssl: ${have_ssl}])
 AC_MSG_NOTICE([                 xattr: ${have_xattr}])
 AC_MSG_NOTICE([                  zlib: ${ac_cv_header_zlib_h}])
