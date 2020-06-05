@@ -10,8 +10,8 @@ export KEY="${KEY:-0x5616F8C2}"
 export VER=${VER:-"$(grep "#define NGINX_VERSION" src/core/nginx.h 2>/dev/null|awk '{print $3}'|sed 's/"//g')"}
 export VER="2.3.16"
 export FLAVORS="vivid trusty precise"
-export FLAVORS="trusty xenial bionic disco"
-export RELEASES="${RELEASES:-"experimental|stable|unstable|precise|trusty|utopic|vivid|oneric|wily|xenial|artful|bionic|cosmic|disco"}"
+export FLAVORS="trusty xenial bionic focal"
+export RELEASES="${RELEASES:-"experimental|stable|unstable|precise|trusty|utopic|vivid|oneric|wily|xenial|artful|bionic|cosmic|focal"}"
 if [ -e "${W}/mc_packaging/debian/" ];then
     rsync -av "${W}/mc_packaging/debian/" "${W}/debian/"
 fi
