@@ -6,12 +6,11 @@ export GPG_AGENT_INFO=${GPG_AGENT_INFO:-${HOME}/.gnupg/S.gpg-agent:0:1}
 export PACKAGE="burp"
 export PPA="${PACKAGE}"
 export DEBEMAIL=${DEBEMAIL:-kiorky@cryptelium.net}
-export KEY="${KEY:-4F01C4A0773018B2CD18F4F2C19BD8A95616F8C2}"
+export KEY="${KEY:-0x2B8CDBC4533B8C52}"
 export VER=${VER:-"$(grep "#define NGINX_VERSION" src/core/nginx.h 2>/dev/null|awk '{print $3}'|sed 's/"//g')"}
 export VER="2.3.28"
-export FLAVORS="vivid trusty precise"
-export FLAVORS="trusty xenial bionic focal"
-export RELEASES="${RELEASES:-"experimental|stable|unstable|precise|trusty|utopic|vivid|oneric|wily|xenial|artful|bionic|cosmic|focal"}"
+export FLAVORS="xenial bionic focal jammy"
+export RELEASES="${RELEASES:-"experimental|stable|unstable|precise|trusty|utopic|vivid|oneric|wily|xenial|artful|bionic|disco|focal|jammy|impish|hirsute|groovy"}"
 if [ -e "${W}/mc_packaging/debian/" ];then
     rsync -av "${W}/mc_packaging/debian/" "${W}/debian/"
 fi
@@ -38,9 +37,8 @@ done
 exec 1>&1 2>&2
 rm "${logfile}.pipe"
 CHANGES=$(egrep "signfile.* dsc " $logfile|awk '{print $3}'|sed -re "s/\.dsc$/_source.changes/g" )
+rm -f $logfile
 # upload to final PPA
 cd "${W}/.."
-for i in ${CHANGES};do
-    dput "${PPA}" $i
-done
+for i in ${CHANGES};do dput "${PPA}" $i;done
 # vim:set et sts=4 ts=4 tw=0:
