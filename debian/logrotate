@@ -1,0 +1,15 @@
+/var/log/burp-client {
+        daily
+        missingok
+        rotate 7
+        compress
+        notifempty
+}
+
+/var/log/burp-bedup {
+        daily
+        missingok
+        rotate 7
+        compress
+        notifempty
+}

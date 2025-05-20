@@ -1,0 +1,27 @@
+Source: burp
+Section: utils
+Priority: optional
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Calogero Lo Leggio <kalos@nerdrug.org>
+Uploaders: Christoph Martin <martin@uni-mainz.de>
+Build-Depends: debhelper (>= 9), dh-autoreconf, libncurses5-dev, libssl-dev, zlib1g-dev,
+               librsync-dev, libacl1-dev, libattr1-dev, uthash-dev, openssl, libyajl-dev,
+               pkg-config, check
+Standards-Version: 3.9.8
+Homepage: http://burp.grke.net/
+Vcs-Git: https://anonscm.debian.org/git/collab-maint/burp.git
+Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/burp.git
+
+Package: burp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.0-6)
+Recommends: openssl
+Description: Simple cross-platform network BackUp and Restore Program
+ Burp is a client/server backup system that saves space and network
+ usage by using librsync. It uses the Volume Snapshot Service for
+ backing up Windows clients.
+
+Package: burp-dbg
+Architecture: any
+Depends: giblib1 (= ${binary:Version}), ${misc:Depends}
+Description: debug pkg for burp

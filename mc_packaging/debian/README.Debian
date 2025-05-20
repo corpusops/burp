@@ -1,0 +1,9 @@
+burp for Debian
+---------------
+
+    Please note that version of burp 1.3.48-4.1 (present in Jessie) used as burp
+    server is incompatible with version of burp >= 2.0.X (present in Stretch)
+    used as burp client.
+    Instead burp 2.0.X as a server can be used with burp 1.3.48-4.1 as a client.
+
+ -- Calogero Lo Leggio <kalos@nerdrug.org>  Sat, 11 Feb 2017 18:17:26 +0000
