@@ -2,272 +2,272 @@ burp (3.1.4-noble-4ubuntu46) noble; urgency=medium
 
   * packaging for noble
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 26 Jul 2024 19:51:49 +0300
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 26 Jul 2024 19:51:49 +0300
 
 burp (3.1.4-noble-4ubuntu45) noble; urgency=medium
 
   * packaging for jammy
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 26 Jul 2024 19:51:46 +0300
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 26 Jul 2024 19:51:46 +0300
 
 burp (3.1.4-jammy-4ubuntu44) jammy; urgency=medium
 
   * packaging for focal
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 26 Jul 2024 19:51:44 +0300
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 26 Jul 2024 19:51:44 +0300
 
 burp (3.1.4-focal-4ubuntu43) focal; urgency=medium
 
   * packaging for bionic
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 26 Jul 2024 19:51:41 +0300
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 26 Jul 2024 19:51:41 +0300
 
 burp (3.1.4-bionic-4ubuntu42) bionic; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 26 Jul 2024 19:51:39 +0300
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 26 Jul 2024 19:51:39 +0300
 
 burp (3.1.4-xenial-4ubuntu41) xenial; urgency=medium
 
   * packaging for jammy
 
- -- kiorky <kiorky@cryptelium.net>  Thu, 23 Dec 2021 18:12:23 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Thu, 23 Dec 2021 18:12:23 +0100
 
 burp (2.5.4-jammy-4ubuntu40) jammy; urgency=medium
 
   * packaging for focal
 
- -- kiorky <kiorky@cryptelium.net>  Thu, 23 Dec 2021 18:12:17 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Thu, 23 Dec 2021 18:12:17 +0100
 
 burp (2.5.4-focal-4ubuntu39) focal; urgency=medium
 
   * packaging for bionic
 
- -- kiorky <kiorky@cryptelium.net>  Thu, 23 Dec 2021 18:12:10 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Thu, 23 Dec 2021 18:12:10 +0100
 
 burp (2.5.4-bionic-4ubuntu38) bionic; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Thu, 23 Dec 2021 18:11:59 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Thu, 23 Dec 2021 18:11:59 +0100
 
 burp (2.5.4-xenial-4ubuntu37) xenial; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Thu, 23 Dec 2021 18:00:29 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Thu, 23 Dec 2021 18:00:29 +0100
 
 burp (2.5.4-xenial-4ubuntu36) xenial; urgency=medium
 
   * packaging for jammy
 
- -- kiorky <kiorky@cryptelium.net>  Thu, 23 Dec 2021 17:24:16 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Thu, 23 Dec 2021 17:24:16 +0100
 
 burp (2.5.4-jammy-4ubuntu35) jammy; urgency=medium
 
   * packaging for focal
 
- -- kiorky <kiorky@cryptelium.net>  Thu, 23 Dec 2021 17:24:10 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Thu, 23 Dec 2021 17:24:10 +0100
 
 burp (2.5.4-focal-4ubuntu34) focal; urgency=medium
 
   * packaging for bionic
 
- -- kiorky <kiorky@cryptelium.net>  Thu, 23 Dec 2021 17:24:01 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Thu, 23 Dec 2021 17:24:01 +0100
 
 burp (2.5.4-bionic-4ubuntu33) bionic; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Thu, 23 Dec 2021 17:23:50 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Thu, 23 Dec 2021 17:23:50 +0100
 
 burp (2.5.4-xenial-4ubuntu32) xenial; urgency=medium
 
   * packaging for focal
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 05 Jun 2020 21:26:11 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 05 Jun 2020 21:26:11 +0200
 
 burp (2.3.28-focal-4ubuntu31) focal; urgency=medium
 
   * packaging for bionic
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 05 Jun 2020 21:26:05 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 05 Jun 2020 21:26:05 +0200
 
 burp (2.3.28-bionic-4ubuntu30) bionic; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 05 Jun 2020 21:25:59 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 05 Jun 2020 21:25:59 +0200
 
 burp (2.3.28-xenial-4ubuntu29) xenial; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 05 Jun 2020 21:25:53 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 05 Jun 2020 21:25:53 +0200
 
 burp (2.3.28-trusty-4ubuntu28) trusty; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 05 Jun 2020 21:25:51 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 05 Jun 2020 21:25:51 +0200
 
 burp (2.3.28-xenial-4ubuntu27) xenial; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 05 Jun 2020 21:25:42 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 05 Jun 2020 21:25:42 +0200
 
 burp (2.3.28-trusty-4ubuntu26) trusty; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 05 Jun 2020 21:24:21 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 05 Jun 2020 21:24:21 +0200
 
 burp (2.3.28-trusty-4ubuntu25) trusty; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 05 Jun 2020 21:23:43 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 05 Jun 2020 21:23:43 +0200
 
 burp (2.3.28-trusty-4ubuntu24) trusty; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Fri, 05 Jun 2020 21:23:15 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Fri, 05 Jun 2020 21:23:15 +0200
 
 burp (2.3.28-trusty-4ubuntu23) trusty; urgency=medium
 
   * packaging for cosmic
 
- -- kiorky <kiorky@cryptelium.net>  Sun, 24 Nov 2019 19:22:26 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Sun, 24 Nov 2019 19:22:26 +0100
 
 burp (2.3.16-cosmic-4ubuntu22) cosmic; urgency=medium
 
   * packaging for bionic
 
- -- kiorky <kiorky@cryptelium.net>  Sun, 24 Nov 2019 19:22:22 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Sun, 24 Nov 2019 19:22:22 +0100
 
 burp (2.3.16-bionic-4ubuntu21) bionic; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Sun, 24 Nov 2019 19:22:18 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Sun, 24 Nov 2019 19:22:18 +0100
 
 burp (2.3.16-xenial-4ubuntu20) xenial; urgency=medium
 
   * packaging
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Sun, 24 Nov 2019 19:22:13 +0100
+ -- kiorky <freesoftware@makina-corpus.com>  Sun, 24 Nov 2019 19:22:13 +0100
 
 burp (2.2.12-cosmic-4ubuntu18) cosmic; urgency=medium
 
   * packaging for cosmic
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:59:34 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:59:34 +0200
 
 burp (2.2.12-cosmic-4ubuntu17) cosmic; urgency=medium
 
   * packaging for bionic
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:59:29 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:59:29 +0200
 
 burp (2.2.12-bionic-4ubuntu16) bionic; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:59:22 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:59:22 +0200
 
 burp (2.2.12-xenial-4ubuntu15) xenial; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:59:18 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:59:18 +0200
 
 burp (2.2.12-trusty-4ubuntu14) trusty; urgency=medium
 
   * packaging for cosmic
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:48:38 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:48:38 +0200
 
 burp (2.2.12-cosmic-4ubuntu13) cosmic; urgency=medium
 
   * packaging for bionic
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:48:35 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:48:35 +0200
 
 burp (2.2.12-bionic-4ubuntu12) bionic; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:48:29 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:48:29 +0200
 
 burp (2.2.12-xenial-4ubuntu11) xenial; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:48:12 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:48:12 +0200
 
 burp (2.2.12-trusty-4ubuntu10) trusty; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:47:41 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:47:41 +0200
 
 burp (2.2.12-xenial-4ubuntu9) xenial; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 23:47:10 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 23:47:10 +0200
 
 burp (2.2.12-trusty-4ubuntu8) trusty; urgency=medium
 
   * packaging for cosmic
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 18:02:14 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 18:02:14 +0200
 
 burp (2.2.12-cosmic-4ubuntu7) cosmic; urgency=medium
 
   * packaging for bionic
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 18:02:10 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 18:02:10 +0200
 
 burp (2.2.12-bionic-4ubuntu6) bionic; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 18:02:06 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 18:02:06 +0200
 
 burp (2.2.12-xenial-4ubuntu5) xenial; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 18:01:59 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 18:01:59 +0200
 
 burp (2.2.12-trusty-4ubuntu4) trusty; urgency=medium
 
   * packaging for cosmic
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 18:00:33 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 18:00:33 +0200
 
 burp (2.2.12-cosmic-4ubuntu3) cosmic; urgency=medium
 
   * packaging for bionic
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 18:00:29 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 18:00:29 +0200
 
 burp (2.2.12-bionic-4ubuntu2) bionic; urgency=medium
 
   * packaging for xenial
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 18:00:21 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 18:00:21 +0200
 
 burp (2.2.12-xenial-4ubuntu1) xenial; urgency=medium
 
   * packaging for trusty
 
- -- kiorky <kiorky@cryptelium.net>  Wed, 17 Oct 2018 18:00:10 +0200
+ -- kiorky <freesoftware@makina-corpus.com>  Wed, 17 Oct 2018 18:00:10 +0200
 
 burp (2.2.12-trusty-4build2) trusty; urgency=medium
 
